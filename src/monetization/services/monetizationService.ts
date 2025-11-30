@@ -15,13 +15,11 @@ import {
   PriceLocalized,
 } from '../models';
 import {
-  findPriceForCountry,
+  findPriceEntryForCountry,
   formatMoney,
   getDefaultLocaleForCountry,
   pickTranslation,
-  resolveUserContext,
   UserContext,
-  UserLike,
 } from '../utils/locale';
 
 export interface SubscriptionPlanDTO {
@@ -189,20 +187,19 @@ function mapSubscriptionPlan(
     locale,
     getDefaultLocaleForCountry(countryCode)
   );
-  const price = findPriceForCountry(
+  const priceEntry = findPriceEntryForCountry(
     plan.pricesByCountry,
     countryCode,
     plan.pricesByCountry[0]?.countryCode as CountryCode | undefined
   );
+  const price = priceEntry?.price;
 
   return {
     code: plan.code,
     title: translation.title,
     description: translation.shortDescription,
     price: price ? { ...price, formatted: formatMoney(price, locale) } : null,
-    billingPeriod: price
-      ? plan.pricesByCountry.find((p) => p.countryCode === countryCode)?.billingPeriod ?? null
-      : null,
+    billingPeriod: priceEntry?.billingPeriod ?? null,
     features: plan.features.map((key) => ({ key, ...featuresMap[key] })),
     maxLeadsPerDay: plan.maxLeadsPerDay ?? null,
   };
@@ -218,11 +215,12 @@ function mapPromotionProduct(
     locale,
     getDefaultLocaleForCountry(countryCode)
   );
-  const price = findPriceForCountry(
+  const priceEntry = findPriceEntryForCountry(
     product.pricesByCountry,
     countryCode,
     product.pricesByCountry[0]?.countryCode as CountryCode | undefined
   );
+  const price = priceEntry?.price;
   return {
     code: product.code,
     title: translation.title,

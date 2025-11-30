@@ -62,15 +62,28 @@ export function findPriceForCountry(
   countryCode: CountryCode,
   fallbackCountryCode?: CountryCode
 ): PriceLocalized | null {
+  return (
+    findPriceEntryForCountry(pricesByCountry, countryCode, fallbackCountryCode)?.price ?? null
+  );
+}
+
+/**
+ * Return matching price entry (with metadata such as billingPeriod) using fallback country when needed.
+ */
+export function findPriceEntryForCountry<T extends { countryCode: CountryCode }>(
+  pricesByCountry: T[],
+  countryCode: CountryCode,
+  fallbackCountryCode?: CountryCode
+): T | null {
   const primary = pricesByCountry.find((p) => p.countryCode === countryCode);
   if (primary) {
-    return primary.price;
+    return primary;
   }
 
   if (fallbackCountryCode) {
     const fallback = pricesByCountry.find((p) => p.countryCode === fallbackCountryCode);
     if (fallback) {
-      return fallback.price;
+      return fallback;
     }
   }
 
