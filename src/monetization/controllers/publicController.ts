@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import {
   getActiveSubscriptionPlansForUser,
   getLeadPriceForUser,
@@ -7,21 +7,25 @@ import {
 } from '../services/monetizationService';
 import { SupportedLocale } from '../models';
 import { resolveUserContext } from '../utils/locale';
+import { RequestWithUser } from '../types';
 
-export async function getPlans(req: Request, res: Response, next: NextFunction) {
+export async function getPlans(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
-    const user = (req as any).user || {};
-    const context = await resolveUserContext(user, req.query.locale as SupportedLocale);
+    const context = await resolveUserContext(req.user ?? {}, req.query.locale as SupportedLocale);
     const plans = await getActiveSubscriptionPlansForUser(context);
-    res.json({ country: { countryCode: context.countryCode, currencyCode: context.currencyCode }, locale: context.locale, plans });
+    res.json({
+      country: { countryCode: context.countryCode, currencyCode: context.currencyCode },
+      locale: context.locale,
+      plans,
+    });
   } catch (error) {
     next(error);
   }
 }
 
-export async function getLeadPrices(req: Request, res: Response, next: NextFunction) {
+export async function getLeadPrices(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
-    const user = (req as any).user || {};
+    const user = req.user ?? {};
     const allowedRoles = ['master', 'foreman', 'contractor'];
     const roles: string[] = user.roles || [];
     if (!roles.some((r) => allowedRoles.includes(r))) {
@@ -39,33 +43,44 @@ export async function getLeadPrices(req: Request, res: Response, next: NextFunct
       res.status(404).json({ message: 'Lead price not found for category' });
       return;
     }
-    res.json({ categoryCode, price });
+    res.json({
+      country: { countryCode: context.countryCode, currencyCode: context.currencyCode },
+      locale: context.locale,
+      categoryCode,
+      price,
+    });
   } catch (error) {
     next(error);
   }
 }
 
-export async function getPromotions(req: Request, res: Response, next: NextFunction) {
+export async function getPromotions(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
-    const user = (req as any).user || {};
-    const context = await resolveUserContext(user, req.query.locale as SupportedLocale);
+    const context = await resolveUserContext(req.user ?? {}, req.query.locale as SupportedLocale);
     const promotions = await getPromotionProductsForUser(context);
-    res.json({ country: { countryCode: context.countryCode, currencyCode: context.currencyCode }, locale: context.locale, promotions });
+    res.json({
+      country: { countryCode: context.countryCode, currencyCode: context.currencyCode },
+      locale: context.locale,
+      promotions,
+    });
   } catch (error) {
     next(error);
   }
 }
 
-export async function getEscrowConfig(req: Request, res: Response, next: NextFunction) {
+export async function getEscrowConfig(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
-    const user = (req as any).user || {};
-    const context = await resolveUserContext(user, req.query.locale as SupportedLocale);
+    const context = await resolveUserContext(req.user ?? {}, req.query.locale as SupportedLocale);
     const config = await getEscrowConfigForUser(context);
     if (!config) {
       res.status(404).json({ message: 'Escrow config not found' });
       return;
     }
-    res.json({ country: { countryCode: context.countryCode, currencyCode: context.currencyCode }, locale: context.locale, config });
+    res.json({
+      country: { countryCode: context.countryCode, currencyCode: context.currencyCode },
+      locale: context.locale,
+      config,
+    });
   } catch (error) {
     next(error);
   }

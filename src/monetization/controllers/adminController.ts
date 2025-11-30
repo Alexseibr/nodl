@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import {
   adminListEscrowConfigs,
   adminListLeadConfigs,
@@ -9,9 +9,10 @@ import {
   adminUpsertPromotion,
   adminUpsertSubscriptionPlan,
 } from '../services/monetizationService';
+import { RequestWithUser } from '../types';
 
-function ensureAdmin(req: Request, res: Response): boolean {
-  const roles: string[] = (req as any).user?.roles || [];
+function ensureAdmin(req: RequestWithUser, res: Response): boolean {
+  const roles: string[] = req.user?.roles || [];
   if (!roles.includes('admin') && !roles.includes('super_admin')) {
     res.status(403).json({ message: 'Admin access required' });
     return false;
@@ -19,7 +20,7 @@ function ensureAdmin(req: Request, res: Response): boolean {
   return true;
 }
 
-export async function listPlans(req: Request, res: Response, next: NextFunction) {
+export async function listPlans(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
     if (!ensureAdmin(req, res)) return;
     const plans = await adminListSubscriptionPlans();
@@ -29,7 +30,7 @@ export async function listPlans(req: Request, res: Response, next: NextFunction)
   }
 }
 
-export async function upsertPlan(req: Request, res: Response, next: NextFunction) {
+export async function upsertPlan(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
     if (!ensureAdmin(req, res)) return;
     const plan = await adminUpsertSubscriptionPlan(req.body);
@@ -39,7 +40,7 @@ export async function upsertPlan(req: Request, res: Response, next: NextFunction
   }
 }
 
-export async function listLeadConfigs(req: Request, res: Response, next: NextFunction) {
+export async function listLeadConfigs(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
     if (!ensureAdmin(req, res)) return;
     const configs = await adminListLeadConfigs();
@@ -49,7 +50,7 @@ export async function listLeadConfigs(req: Request, res: Response, next: NextFun
   }
 }
 
-export async function upsertLeadConfig(req: Request, res: Response, next: NextFunction) {
+export async function upsertLeadConfig(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
     if (!ensureAdmin(req, res)) return;
     const config = await adminUpsertLeadConfig(req.body);
@@ -59,7 +60,7 @@ export async function upsertLeadConfig(req: Request, res: Response, next: NextFu
   }
 }
 
-export async function listPromotions(req: Request, res: Response, next: NextFunction) {
+export async function listPromotions(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
     if (!ensureAdmin(req, res)) return;
     const promotions = await adminListPromotions();
@@ -69,7 +70,7 @@ export async function listPromotions(req: Request, res: Response, next: NextFunc
   }
 }
 
-export async function upsertPromotion(req: Request, res: Response, next: NextFunction) {
+export async function upsertPromotion(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
     if (!ensureAdmin(req, res)) return;
     const promotion = await adminUpsertPromotion(req.body);
@@ -79,7 +80,7 @@ export async function upsertPromotion(req: Request, res: Response, next: NextFun
   }
 }
 
-export async function listEscrowConfigs(req: Request, res: Response, next: NextFunction) {
+export async function listEscrowConfigs(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
     if (!ensureAdmin(req, res)) return;
     const configs = await adminListEscrowConfigs();
@@ -89,7 +90,7 @@ export async function listEscrowConfigs(req: Request, res: Response, next: NextF
   }
 }
 
-export async function upsertEscrowConfig(req: Request, res: Response, next: NextFunction) {
+export async function upsertEscrowConfig(req: RequestWithUser, res: Response, next: NextFunction) {
   try {
     if (!ensureAdmin(req, res)) return;
     const config = await adminUpsertEscrowConfig(req.body);
