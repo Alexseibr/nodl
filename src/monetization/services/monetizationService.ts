@@ -43,14 +43,14 @@ export interface PromotionProductDTO {
 export async function getActiveSubscriptionPlansForUser(
   context: UserContext
 ): Promise<SubscriptionPlanDTO[]> {
-  const { countryCode, locale } = context;
+  const { countryCode, locale, defaultLocale } = context;
   const plans = await SubscriptionPlanModel.find({ isActive: true })
     .sort({ priority: -1 })
     .lean();
-  const featuresMap = await loadFeatures(locale);
+  const featuresMap = await loadFeatures(locale, defaultLocale);
 
   return plans.map((plan) =>
-    mapSubscriptionPlan(plan, countryCode, locale, featuresMap)
+    mapSubscriptionPlan(plan, countryCode, locale, defaultLocale, featuresMap)
   );
 }
 
@@ -76,10 +76,12 @@ export async function getLeadPriceForUser(
 export async function getPromotionProductsForUser(
   context: UserContext
 ): Promise<PromotionProductDTO[]> {
-  const { countryCode, locale } = context;
+  const { countryCode, locale, defaultLocale } = context;
   const products = await PromotionProductModel.find().lean();
 
-  return products.map((product) => mapPromotionProduct(product, countryCode, locale));
+  return products.map((product) =>
+    mapPromotionProduct(product, countryCode, locale, defaultLocale)
+  );
 }
 
 export async function getEscrowConfigForUser(
@@ -159,13 +161,14 @@ export async function adminUpsertEscrowConfig(
   });
 }
 
-async function loadFeatures(locale: SupportedLocale): Promise<
-  Record<string, { label?: string; description?: string }>
-> {
+async function loadFeatures(
+  locale: SupportedLocale,
+  fallbackLocale: SupportedLocale
+): Promise<Record<string, { label?: string; description?: string }>> {
   const records = await MonetizationFeatureModel.find().lean();
   return records.reduce<Record<string, { label?: string; description?: string }>>(
     (acc, feature) => {
-      const translation = pickTranslation(feature, locale);
+      const translation = pickTranslation(feature, locale, fallbackLocale);
       acc[feature.key] = {
         label: translation.title,
         description: translation.shortDescription,
@@ -180,12 +183,13 @@ function mapSubscriptionPlan(
   plan: SubscriptionPlanDocument,
   countryCode: CountryCode,
   locale: SupportedLocale,
+  defaultLocale: SupportedLocale,
   featuresMap: Record<string, { label?: string; description?: string }>
 ): SubscriptionPlanDTO {
   const translation = pickTranslation(
     plan,
     locale,
-    getDefaultLocaleForCountry(countryCode)
+    defaultLocale || getDefaultLocaleForCountry(countryCode)
   );
   const priceEntry = findPriceEntryForCountry(
     plan.pricesByCountry,
@@ -208,12 +212,13 @@ function mapSubscriptionPlan(
 function mapPromotionProduct(
   product: PromotionProductDocument,
   countryCode: CountryCode,
-  locale: SupportedLocale
+  locale: SupportedLocale,
+  defaultLocale: SupportedLocale
 ): PromotionProductDTO {
   const translation = pickTranslation(
     product,
     locale,
-    getDefaultLocaleForCountry(countryCode)
+    defaultLocale || getDefaultLocaleForCountry(countryCode)
   );
   const priceEntry = findPriceEntryForCountry(
     product.pricesByCountry,

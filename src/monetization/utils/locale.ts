@@ -17,6 +17,7 @@ export interface UserContext {
   countryCode: CountryCode;
   currencyCode: CurrencyCode;
   locale: SupportedLocale;
+  defaultLocale: SupportedLocale;
 }
 
 const currencySymbols: Record<CurrencyCode, string> = {
@@ -153,7 +154,8 @@ export async function resolveUserContext(
   const countryCode = (countryDoc?.code || user.country || 'BY') as CountryCode;
   const supportedLocales = countryDoc?.supportedLocales ?? [];
   const supportedCurrencies = countryDoc?.supportedCurrencies ?? [];
-  const defaultLocale = countryDoc?.defaultLocale ?? getDefaultLocaleForCountry(countryCode) ?? 'en';
+  const defaultLocale =
+    countryDoc?.defaultLocale ?? getDefaultLocaleForCountry(countryCode) ?? 'en';
   const resolvedLocale =
     (requestedLocale && isSupportedLocale(requestedLocale) &&
       (supportedLocales.length === 0 || supportedLocales.includes(requestedLocale)))
@@ -173,6 +175,7 @@ export async function resolveUserContext(
     countryCode,
     currencyCode: resolvedCurrency,
     locale: resolvedLocale,
+    defaultLocale,
   };
 }
 
