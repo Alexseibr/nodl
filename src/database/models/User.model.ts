@@ -7,6 +7,7 @@ export interface User extends Document {
   email?: string;
   name: string;
   role: UserRole;
+  telegramId?: number;
   language: 'ru' | 'en' | 'pl';
   country: string;
   subscriptions: Schema.Types.ObjectId[];
@@ -29,7 +30,8 @@ const UserSchema = new Schema<User>(
     phone: { type: String, required: true, unique: true },
     email: { type: String },
     name: { type: String, required: true },
-    role: { type: String, enum: ['customer', 'master', 'team', 'storeOwner', 'admin'], required: true },
+    role: { type: String, enum: ['customer', 'master', 'team', 'storeOwner', 'admin', 'moderator'], required: true },
+    telegramId: { type: Number, index: true },
     language: { type: String, enum: ['ru', 'en', 'pl'], default: 'ru' },
     country: { type: String, required: true },
     subscriptions: [{ type: Schema.Types.ObjectId, ref: 'UserSubscription' }],

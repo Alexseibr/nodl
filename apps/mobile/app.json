@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "nodl-mobile",
+    "slug": "nodl-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "nodl",
+    "platforms": ["ios", "android"],
+    "extra": {
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}
