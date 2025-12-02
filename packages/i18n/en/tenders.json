@@ -1,0 +1,22 @@
+{
+  "createTender": {
+    "pageTitle": "Create tender",
+    "titleLabel": "Work title",
+    "descriptionLabel": "Description",
+    "budgetLabel": "Budget",
+    "currencyLabel": "Currency",
+    "submitButton": "Publish tender",
+    "saveDraftButton": "Save draft"
+  },
+  "bidsTable": {
+    "contractor": "Contractor",
+    "price": "Price",
+    "duration": "Duration (days)",
+    "startFrom": "Start from",
+    "warranty": "Warranty (months)",
+    "includesMaterials": "Materials included",
+    "status": "Status",
+    "actions": "Actions",
+    "acceptBid": "Select contractor"
+  }
+}

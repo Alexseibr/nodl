@@ -1,0 +1,22 @@
+{
+  "createTender": {
+    "pageTitle": "Utwórz przetarg",
+    "titleLabel": "Tytuł prac",
+    "descriptionLabel": "Opis zadania",
+    "budgetLabel": "Budżet",
+    "currencyLabel": "Waluta",
+    "submitButton": "Opublikuj przetarg",
+    "saveDraftButton": "Zapisz wersję roboczą"
+  },
+  "bidsTable": {
+    "contractor": "Wykonawca",
+    "price": "Cena",
+    "duration": "Czas (dni)",
+    "startFrom": "Start od",
+    "warranty": "Gwarancja (mies)",
+    "includesMaterials": "Materiały w cenie",
+    "status": "Status",
+    "actions": "Akcje",
+    "acceptBid": "Wybierz wykonawcę"
+  }
+}

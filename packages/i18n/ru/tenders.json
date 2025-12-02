@@ -1,0 +1,22 @@
+{
+  "createTender": {
+    "pageTitle": "Создать тендер",
+    "titleLabel": "Название работ",
+    "descriptionLabel": "Описание задачи",
+    "budgetLabel": "Бюджет",
+    "currencyLabel": "Валюта",
+    "submitButton": "Опубликовать тендер",
+    "saveDraftButton": "Сохранить черновик"
+  },
+  "bidsTable": {
+    "contractor": "Исполнитель",
+    "price": "Цена",
+    "duration": "Срок (дней)",
+    "startFrom": "Старт с",
+    "warranty": "Гарантия (мес)",
+    "includesMaterials": "Материалы включены",
+    "status": "Статус",
+    "actions": "Действия",
+    "acceptBid": "Выбрать исполнителя"
+  }
+}
