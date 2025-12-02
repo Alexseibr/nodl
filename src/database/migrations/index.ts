@@ -1,0 +1,12 @@
+export { up as migration_001_init_users } from './001_init_users';
+export { up as migration_002_init_geo } from './002_init_geo';
+export { up as migration_003_init_categories } from './003_init_categories';
+export { up as migration_004_init_stores } from './004_init_stores';
+export { up as migration_005_init_ads } from './005_init_ads';
+export { up as migration_006_init_tenders } from './006_init_tenders';
+export { up as migration_007_init_tender_responses } from './007_init_tender_responses';
+export { up as migration_008_init_payments } from './008_init_payments';
+export { up as migration_009_init_subscriptions } from './009_init_subscriptions';
+export { up as migration_010_init_heatmap } from './010_init_heatmap';
+export { up as migration_011_add_indexes } from './011_add_indexes';
+export { up as migration_012_seed_admin_user } from './012_seed_admin_user';
