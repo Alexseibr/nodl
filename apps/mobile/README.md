@@ -1,3 +1,3 @@
-# React Native SuperApp (скелет)
+# NODL Mobile
 
-Предполагаемый стек: Expo Router / React Native, авторизация по телефону + Telegram, лента "заказы рядом" и кабинет мастера/бригады/прораба. Использует те же DTO из `packages/types` и переводы из `packages/i18n`.
+Expo-managed React Native shell for the NODL platform. Install dependencies with `npm install` and start with `npm start` inside this folder. The app uses bottom tabs (Home, Create, Profile) and talks to the REST API via the `EXPO_PUBLIC_API_URL` environment variable.
