@@ -3,11 +3,13 @@ import { CreateBidDto, UpdateBidDto } from './bids.dto';
 import { Bid } from './bids.types';
 import { BidRepository } from './bids.repository';
 import { TenderRepository } from '../tenders';
+import { BidsPromotionsService } from '../bids-promotions/bids-promotions.service';
 
 export class BidsService {
   constructor(
     private readonly repository: BidRepository,
     private readonly tendersRepository: TenderRepository,
+    private readonly promotionsService?: BidsPromotionsService,
   ) {}
 
   createBid(contractorId: string, dto: CreateBidDto): Bid | undefined {
@@ -50,7 +52,27 @@ export class BidsService {
   }
 
   listByTender(tenderId: string): Bid[] {
-    return this.repository.listByTender(tenderId);
+    const bids = this.repository.listByTender(tenderId);
+    if (!this.promotionsService) return bids;
+
+    const tier = (bid: Bid) => {
+      const hasPriority = this.promotionsService?.getStatus(bid.id).some((promo) => promo.type === 'priority');
+      const hasBoost = this.promotionsService?.getStatus(bid.id).some((promo) => promo.type === 'boost');
+      const plan = this.promotionsService.getSubscriptionTier(bid.contractorId);
+      if (hasPriority) return 0;
+      if (hasBoost) return 1;
+      if (plan === 'pro_plus') return 2;
+      if (plan === 'pro' || plan === 'starter') return 3;
+      return 4;
+    };
+
+    return bids
+      .slice()
+      .sort((a, b) => {
+        const tierDiff = tier(a) - tier(b);
+        if (tierDiff !== 0) return tierDiff;
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      });
   }
 
   shortlistBid(tenderId: string, bidId: string, customerId: string): Bid | undefined {
