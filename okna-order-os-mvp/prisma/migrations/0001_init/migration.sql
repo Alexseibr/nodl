@@ -1,0 +1,1 @@
+-- Migration placeholder. Run `npm run prisma:migrate -- --name init` to regenerate SQL from schema.

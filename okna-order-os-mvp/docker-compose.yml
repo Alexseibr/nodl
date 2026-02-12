@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:16
+    container_name: okna_order_os_pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: okna_order_os
+      POSTGRES_USER: okna
+      POSTGRES_PASSWORD: okna
+    ports:
+      - '54329:5432'
+    volumes:
+      - okna_order_os_pg_data:/var/lib/postgresql/data
+volumes:
+  okna_order_os_pg_data:
