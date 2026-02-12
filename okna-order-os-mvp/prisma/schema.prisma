@@ -1,0 +1,305 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CompanyType {
+  DEALER
+  FACTORY
+}
+
+enum UserRole {
+  OWNER
+  MANAGER
+  MEASURER
+  INSTALLER
+  ACCOUNTANT
+}
+
+enum LeadStatus {
+  NEW
+  IN_PROGRESS
+  WON
+  LOST
+}
+
+enum OrderStatus {
+  DRAFT
+  MEASURED
+  OFFER_CREATED
+  OFFER_SENT
+  CONFIRMED
+  SENT_TO_FACTORY
+  IN_PRODUCTION
+  READY
+  INSTALLED
+  CLOSED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+enum OrderItemType {
+  WINDOW
+  DOOR
+}
+
+enum PricingRuleType {
+  PERCENT
+  FIXED
+  COEFFICIENT
+}
+
+enum DocumentType {
+  OFFER
+  INVOICE
+  CONTRACT
+  SPEC
+  ACT
+}
+
+enum DocumentStatus {
+  DRAFT
+  FINAL
+}
+
+enum TaskType {
+  MEASURE
+  INSTALL
+  CALL
+}
+
+enum TaskEntityType {
+  LEAD
+  ORDER
+}
+
+enum TaskStatus {
+  PLANNED
+  DONE
+  CANCELED
+}
+
+model Company {
+  id        String      @id @default(cuid())
+  name      String
+  type      CompanyType
+  timezone  String      @default("Europe/Warsaw")
+  currency  String      @default("EUR")
+  users     User[]
+  leads     Lead[]
+  addresses Address[]
+  openings  Opening[]
+  orders    Order[]
+  rules     PricingRule[]
+  documents Document[]
+  files     File[]
+  tasks     Task[]
+  auditLogs AuditLog[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model User {
+  id            String    @id @default(cuid())
+  companyId     String
+  role          UserRole
+  email         String
+  phone         String
+  name          String
+  passwordHash  String
+  isActive      Boolean   @default(true)
+  company       Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  leadsAssigned Lead[]    @relation("LeadAssignedTo")
+  openingsDone  Opening[] @relation("OpeningMeasuredBy")
+  ordersAssigned Order[]  @relation("OrderAssignedTo")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([companyId, email])
+}
+
+model Lead {
+  id               String     @id @default(cuid())
+  companyId        String
+  clientName       String
+  clientPhone      String
+  clientEmail      String?
+  source           String?
+  status           LeadStatus @default(NEW)
+  assignedToUserId String?
+  notes            String?
+  company          Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  assignedToUser   User?      @relation("LeadAssignedTo", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  orders           Order[]
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@index([companyId, status])
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  companyId String
+  raw       String
+  country   String?
+  city      String?
+  street    String?
+  house     String?
+  flat      String?
+  lat       Decimal?
+  lng       Decimal?
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  openings  Opening[]
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Opening {
+  id               String    @id @default(cuid())
+  companyId        String
+  addressId        String
+  type             String
+  widthMm          Int
+  heightMm         Int
+  depthMm          Int?
+  wallType         String?
+  comment          String?
+  measuredByUserId String?
+  measuredAt       DateTime?
+  company          Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  address          Address   @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  measuredByUser   User?     @relation("OpeningMeasuredBy", fields: [measuredByUserId], references: [id], onDelete: SetNull)
+  items            OrderItem[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Order {
+  id               String        @id @default(cuid())
+  companyId        String
+  leadId           String?
+  addressId        String
+  status           OrderStatus   @default(DRAFT)
+  paymentStatus    PaymentStatus @default(UNPAID)
+  assignedToUserId String?
+  factoryCompanyId String?
+  customerName     String
+  customerPhone    String
+  totalsFactory    Decimal       @default(0)
+  totalsDealer     Decimal       @default(0)
+  totalsMargin     Decimal       @default(0)
+  comment          String?
+  company          Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  lead             Lead?         @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  address          Address       @relation(fields: [addressId], references: [id], onDelete: Restrict)
+  assignedToUser   User?         @relation("OrderAssignedTo", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  items            OrderItem[]
+  documents        Document[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([companyId, status])
+}
+
+model OrderItem {
+  id             String        @id @default(cuid())
+  orderId        String
+  openingId      String?
+  type           OrderItemType
+  title          String
+  qty            Int
+  attributesJson Json
+  priceFactory   Decimal
+  priceDealer    Decimal
+  margin         Decimal
+  order          Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  opening        Opening?      @relation(fields: [openingId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([orderId])
+}
+
+model PricingRule {
+  id        String          @id @default(cuid())
+  companyId String
+  ruleType  PricingRuleType
+  value     Decimal
+  scopeJson Json?
+  company   Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model Document {
+  id              String         @id @default(cuid())
+  companyId       String
+  orderId         String
+  type            DocumentType
+  status          DocumentStatus @default(DRAFT)
+  fileUrl         String
+  metaJson        Json?
+  createdByUserId String
+  company         Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([orderId])
+}
+
+model File {
+  id              String   @id @default(cuid())
+  companyId       String
+  entityType      String
+  entityId        String
+  fileUrl         String
+  fileName        String
+  mimeType        String
+  sizeBytes       Int
+  createdByUserId String
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
+
+model Task {
+  id               String         @id @default(cuid())
+  companyId        String
+  type             TaskType
+  entityType       TaskEntityType
+  entityId         String
+  scheduledAt      DateTime
+  assignedToUserId String
+  status           TaskStatus     @default(PLANNED)
+  comment          String?
+  company          Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([companyId, status])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  companyId  String
+  userId     String
+  entityType String
+  entityId   String
+  action     String
+  diffJson   Json
+  createdAt  DateTime @default(now())
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, entityId])
+}

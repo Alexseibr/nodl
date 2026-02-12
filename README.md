@@ -1,67 +1,36 @@
-# NODL Platform Monorepo
+# NODL MVP Order OS
 
-NODL — платформа для заказчиков, мастеров, бригад, прорабов и строительных магазинов с единым API, мультиязычностью (RU/EN/PL) и мультивалютностью (BYN/RUB/PLN/EUR).
+## Local run (API)
 
-## Структура репозитория
-
-```
-/nodl
-  /apps
-    /api       # NestJS backend
-    /web       # Next.js web-приложение
-    /miniapp   # Telegram MiniApp (web)
-    /mobile    # React Native SuperApp (скелет)
-  /packages
-    /ui        # общие UI-компоненты
-    /shared    # хелперы/хуки
-    /types     # DTO и модели
-    /i18n      # словари переводов (RU/EN/PL)
-    /config    # общие конфиги
-  /infra
-    /docker
-    /nginx
-    /ci-cd
-  docker-compose.yml
-  ARCHITECTURE.md
-  API.md
+```bash
+cd apps/api
+npm install
+npm run build
+npm run start:dev
 ```
 
-## Быстрый старт (Docker Compose)
+Base URL: `http://localhost:3000/api/v1`
 
-1. Скопировать переменные окружения:
+Auth for MVP uses request header:
+- `x-user-id: usr_owner` (seeded owner)
 
-   ```bash
-   cp .env.example .env
-   ```
+## Seed fixture
 
-2. Запустить сервисы (API, web, miniapp, Mongo, Redis, Nginx):
+On app start service seeds:
+- Company `cmp_demo` (DEALER)
+- Owner user `usr_owner`
 
-   ```bash
-   docker-compose up --build
-   ```
+## Environment variables
 
-3. Доступы по умолчанию:
-   - API: `http://localhost:3000/api`
-   - Web: `http://localhost:3001`
-   - MiniApp: `http://localhost:3002`
-   - Nginx reverse proxy: `http://localhost`
+MVP does not require mandatory env vars.
+Optional:
+- `PORT` (default 3000)
 
-## Разработка без Docker
+## Smoke scenario
 
-- API: `cd apps/api && npm install && npm run start:dev`
-- Web: `cd apps/web && npm install && npm run dev`
-- MiniApp: `cd apps/miniapp && npm install && npm run dev`
+```bash
+cd apps/api
+npm run test:smoke
+```
 
-## Мультиязычность и мультивалютность
-
-- Переводы хранятся в `packages/i18n`. Клиенты получают словари через API/статический импорт и сохраняют выбранный язык в профиле пользователя.
-- Базовая валюта — EUR. Локальные цены (BYN/RUB/PLN) вычисляются через Currency Service с кешированием курсов в Redis.
-
-## Основные модули API
-
-Скелет модулей находится в `apps/api/src/modules/*`: auth, users, masters, teams, tenders, bids, stores, geo, reviews, analytics, currency, media, notifications, admin.
-
-## Документация
-
-- [ARCHITECTURE.md](ARCHITECTURE.md) — архитектура, диаграммы, ERD.
-- [API.md](API.md) — основные эндпоинты и роли.
+This runs `lead -> convert -> order -> item -> offer -> transitions -> export package` flow.
